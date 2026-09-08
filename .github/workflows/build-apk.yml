@@ -30,9 +30,9 @@ jobs:
 
       - name: Ekstrak proyek Android
         run: |
-          test -f Embertrail-Android-Source.zip
+          test -f Embertrail-Android-Source-v0.2.zip
           mkdir -p android-project
-          unzip -q Embertrail-Android-Source.zip -d android-project
+          unzip -q Embertrail-Android-Source-v0.2.zip -d android-project
           test -f android-project/app/build.gradle
 
       - name: Instal Android 16 SDK
@@ -46,9 +46,9 @@ jobs:
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose android-project/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p output
-          cp android-project/app/build/outputs/apk/debug/app-debug.apk output/Embertrail-v0.1-debug.apk
+          cp android-project/app/build/outputs/apk/debug/app-debug.apk output/Embertrail-v0.2-debug.apk
           cd output
-          sha256sum Embertrail-v0.1-debug.apk > SHA256.txt
+          sha256sum Embertrail-v0.2-debug.apk > SHA256.txt
 
       - name: Sediakan unduhan APK
         uses: actions/upload-artifact@v4
