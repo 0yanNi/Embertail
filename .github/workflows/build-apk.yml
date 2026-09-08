@@ -1,0 +1,59 @@
+name: Build Embertrail APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Ambil kode dari repository
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Siapkan Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Siapkan Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Ekstrak proyek Android
+        run: |
+          test -f Embertrail-Android-Source.zip
+          mkdir -p android-project
+          unzip -q Embertrail-Android-Source.zip -d android-project
+          test -f android-project/app/build.gradle
+
+      - name: Instal Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Build APK debug untuk pengujian pribadi
+        working-directory: android-project
+        run: gradle --no-daemon --console=plain assembleDebug
+
+      - name: Verifikasi tanda tangan dan siapkan APK
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose android-project/app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p output
+          cp android-project/app/build/outputs/apk/debug/app-debug.apk output/Embertrail-v0.1-debug.apk
+          cd output
+          sha256sum Embertrail-v0.1-debug.apk > SHA256.txt
+
+      - name: Sediakan unduhan APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Embertrail-APK
+          path: output/
+          if-no-files-found: error
+          retention-days: 7
